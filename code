@@ -1,0 +1,287 @@
+import tkinter as tk
+from tkinter import messagebox
+import random
+
+class JogoAdivinhacao:
+    def __init__(self, janela):
+        self.janela = janela
+        self.janela.title("🎮 Jogo de Adivinhação")
+        self.janela.geometry("500x600")
+        self.janela.resizable(False, False)
+        self.janela.configure(bg="#2c3e50")
+        
+
+        self.numero_secreto = 0
+        self.tentativas = 0
+        self.numero_maximo = 100
+        self.palpites = []
+        self.jogo_ativo = False
+        
+        self.criar_interface()
+        self.iniciar_jogo()
+    
+    def criar_interface(self):
+        """Cria todos os elementos da interface"""
+        
+
+        titulo = tk.Label(
+            self.janela,
+            text=" JOGO DE ADIVINHAÇÃO",
+            font=("Arial", 20, "bold"),
+            bg="#2c3e50",
+            fg="#ecf0f1"
+        )
+        titulo.pack(pady=20)
+        
+
+        instrucao = tk.Label(
+            self.janela,
+            text=f"Adivinhe o número entre 1 e {self.numero_maximo}",
+            font=("Arial", 12),
+            bg="#2c3e50",
+            fg="#bdc3c7"
+        )
+        instrucao.pack(pady=10)
+        
+
+        frame_entrada = tk.Frame(self.janela, bg="#2c3e50")
+        frame_entrada.pack(pady=20)
+        
+        tk.Label(
+            frame_entrada,
+            text="Seu palpite:",
+            font=("Arial", 11),
+            bg="#2c3e50",
+            fg="#ecf0f1"
+        ).pack(side=tk.LEFT, padx=10)
+        
+        self.entrada = tk.Entry(
+            frame_entrada,
+            font=("Arial", 14, "bold"),
+            width=10,
+            justify="center"
+        )
+        self.entrada.pack(side=tk.LEFT, padx=10)
+        self.entrada.bind("<Return>", lambda e: self.enviar_palpite())
+        
+
+        botao_enviar = tk.Button(
+            self.janela,
+            text=" Enviar",
+            font=("Arial", 11, "bold"),
+            command=self.enviar_palpite,
+            bg="#3498db",
+            fg="white",
+            padx=20,
+            pady=10,
+            cursor="hand2"
+        )
+        botao_enviar.pack(pady=10)
+        
+
+        self.label_resposta = tk.Label(
+            self.janela,
+            text="",
+            font=("Arial", 12, "bold"),
+            bg="#2c3e50",
+            fg="#f39c12",
+            wraplength=400
+        )
+        self.label_resposta.pack(pady=15)
+        
+
+        frame_info = tk.Frame(self.janela, bg="#34495e", relief="solid", bd=2)
+        frame_info.pack(pady=15, padx=20, fill=tk.BOTH)
+        
+        self.label_tentativas = tk.Label(
+            frame_info,
+            text="Tentativas: 0",
+            font=("Arial", 11, "bold"),
+            bg="#34495e",
+            fg="#2ecc71"
+        )
+        self.label_tentativas.pack(pady=10)
+        
+
+        frame_historico = tk.Frame(self.janela, bg="#34495e", relief="solid", bd=2)
+        frame_historico.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
+        
+        tk.Label(
+            frame_historico,
+            text="Palpites:",
+            font=("Arial", 10, "bold"),
+            bg="#34495e",
+            fg="#ecf0f1"
+        ).pack(pady=5)
+        
+
+        self.text_historico = tk.Text(
+            frame_historico,
+            font=("Arial", 10),
+            height=6,
+            width=45,
+            bg="#2c3e50",
+            fg="#ecf0f1",
+            state=tk.DISABLED
+        )
+        self.text_historico.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+        
+
+        botao_novo = tk.Button(
+            self.janela,
+            text=" Novo Jogo",
+            font=("Arial", 11, "bold"),
+            command=self.novo_jogo,
+            bg="#27ae60",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        botao_novo.pack(pady=10, side=tk.LEFT, padx=10)
+        
+
+        botao_sair = tk.Button(
+            self.janela,
+            text=" Sair",
+            font=("Arial", 11, "bold"),
+            command=self.janela.quit,
+            bg="#e74c3c",
+            fg="white",
+            padx=20,
+            pady=8,
+            cursor="hand2"
+        )
+        botao_sair.pack(pady=10, side=tk.RIGHT, padx=10)
+        
+
+        frame_botoes = tk.Frame(self.janela, bg="#2c3e50")
+        frame_botoes.pack(fill=tk.X, pady=10)
+    
+    def iniciar_jogo(self):
+        """Inicia um novo jogo"""
+        self.numero_secreto = random.randint(1, self.numero_maximo)
+        self.tentativas = 0
+        self.palpites = []
+        self.jogo_ativo = True
+        
+        self.label_resposta.config(
+            text="Jogo iniciado! Faça seu primeiro palpite.",
+            fg="#2ecc71"
+        )
+        self.label_tentativas.config(text="Tentativas: 0")
+        self.atualizar_historico()
+        self.entrada.delete(0, tk.END)
+        self.entrada.focus()
+    
+    def enviar_palpite(self):
+        """Processa o palpite do usuário"""
+        if not self.jogo_ativo:
+            messagebox.showinfo("Jogo Finalizado", "Comece um novo jogo!")
+            return
+        
+        try:
+            entrada_texto = self.entrada.get().strip()
+            if not entrada_texto:
+                self.label_resposta.config(
+                    text=" Digite um número!",
+                    fg="#e74c3c"
+                )
+                return
+            
+            palpite = int(entrada_texto)
+            
+
+            if palpite < 1 or palpite > self.numero_maximo:
+                self.label_resposta.config(
+                    text=f" Digite um número entre 1 e {self.numero_maximo}!",
+                    fg="#e74c3c"
+                )
+                self.entrada.delete(0, tk.END)
+                return
+            
+            if palpite in self.palpites:
+                self.label_resposta.config(
+                    text=f" Você já tentou {palpite}!",
+                    fg="#f39c12"
+                )
+                self.entrada.delete(0, tk.END)
+                return
+            
+            self.palpites.append(palpite)
+            self.tentativas += 1
+            
+            if palpite == self.numero_secreto:
+                self.acertou()
+            elif palpite < self.numero_secreto:
+                diferenca = self.numero_secreto - palpite
+                self.label_resposta.config(
+                    text=f" O número é MAIOR!\n(Faltam {diferenca} números)",
+                    fg="#f39c12"
+                )
+            else:
+                diferenca = palpite - self.numero_secreto
+                self.label_resposta.config(
+                    text=f" O número é MENOR!\n(Faltam {diferenca} números)",
+                    fg="#f39c12"
+                )
+            
+            self.label_tentativas.config(text=f"Tentativas: {self.tentativas}")
+            self.atualizar_historico()
+            self.entrada.delete(0, tk.END)
+            self.entrada.focus()
+            
+        except ValueError:
+            self.label_resposta.config(
+                text="⚠️ Digite um número válido!",
+                fg="#e74c3c"
+            )
+            self.entrada.delete(0, tk.END)
+    
+    def acertou(self):
+        """Exibe mensagem de acerto"""
+        self.jogo_ativo = False
+        
+        # Avaliação de desempenho
+        if self.tentativas <= 3:
+            mensagem = " PARABÉNS! Que memória incrível!"
+            cor = "#2ecc71"
+        elif self.tentativas <= 7:
+            mensagem = " PARABÉNS! Muito bom!"
+            cor = "#2ecc71"
+        else:
+            mensagem = " PARABÉNS! Continue praticando!"
+            cor = "#2ecc71"
+        
+        self.label_resposta.config(
+            text=f"{mensagem}\nAcertou em {self.tentativas} tentativa(s)!\nO número era {self.numero_secreto}",
+            fg=cor
+        )
+        
+        messagebox.showinfo(
+            "🎉 Ganhou!",
+            f"Parabéns! Você acertou em {self.tentativas} tentativa(s)!\n\nO número secreto era {self.numero_secreto}"
+        )
+    
+    def atualizar_historico(self):
+        """Atualiza o histórico de palpites"""
+        self.text_historico.config(state=tk.NORMAL)
+        self.text_historico.delete(1.0, tk.END)
+        
+        if self.palpites:
+            texto = " | ".join(str(p) for p in self.palpites)
+            self.text_historico.insert(tk.END, texto)
+        else:
+            self.text_historico.insert(tk.END, "Nenhum palpite ainda...")
+        
+        self.text_historico.config(state=tk.DISABLED)
+    
+    def novo_jogo(self):
+        """Inicia um novo jogo"""
+        self.iniciar_jogo()
+
+# Executar o jogo
+if __name__ == "__main__":
+    janela = tk.Tk()
+    jogo = JogoAdivinhacao(janela)
+    janela.mainloop()
